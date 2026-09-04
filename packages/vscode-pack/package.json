@@ -1,0 +1,11 @@
+{
+  "name": "unify-notifier",
+  "displayName": "Unify Notifier",
+  "description": "One notification bridge for AI coding agents. Supports Remote SSH, WSL and Dev Containers through separate local UI and workspace router extensions.",
+  "version": "0.1.0",
+  "publisher": "bibistellar",
+  "license": "MIT",
+  "engines": {"vscode": "^1.105.0"},
+  "categories": ["Extension Packs", "Other"],
+  "extensionPack": ["bibistellar.unify-notifier-ui", "bibistellar.unify-notifier-router"]
+}

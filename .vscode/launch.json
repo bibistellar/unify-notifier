@@ -1,0 +1,18 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run Unify Notifier (UI + Router)",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}/packages/vscode-ui",
+        "--extensionDevelopmentPath=${workspaceFolder}/packages/vscode-router"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/packages/vscode-ui/dist/**/*.js",
+        "${workspaceFolder}/packages/vscode-router/dist/**/*.js"
+      ]
+    }
+  ]
+}

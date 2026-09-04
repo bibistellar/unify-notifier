@@ -1,0 +1,8 @@
+{
+  "hooks": {
+    "Stop": [{"hooks": [{"type": "command", "command": "~/.unify-notifier/bin/unify-notifier --agent codebuddy --event completed --stdin"}]}],
+    "StopFailure": [{"hooks": [{"type": "command", "command": "~/.unify-notifier/bin/unify-notifier --agent codebuddy --event failed --stdin"}]}],
+    "PermissionRequest": [{"hooks": [{"type": "command", "command": "~/.unify-notifier/bin/unify-notifier --agent codebuddy --event approval --stdin"}]}],
+    "Elicitation": [{"hooks": [{"type": "command", "command": "~/.unify-notifier/bin/unify-notifier --agent codebuddy --event input-required --stdin"}]}]
+  }
+}

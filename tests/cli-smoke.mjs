@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import { spawn } from 'node:child_process';
+import fs from 'node:fs';
+import http from 'node:http';
+import os from 'node:os';
+import path from 'node:path';
+import crypto from 'node:crypto';
+const root=path.resolve(import.meta.dirname,'..'),cli=path.join(root,'packages','vscode-router','assets','unify-notifier-cli.js'),temp=fs.mkdtempSync(path.join(os.tmpdir(),'unify-notifier-test-')),routes=path.join(temp,'routes'); fs.mkdirSync(routes,{recursive:true});
+let received; const token=crypto.randomBytes(16).toString('hex'); const server=http.createServer((req,res)=>{assert.equal(req.method,'POST');assert.equal(req.url,'/notify');assert.equal(req.headers.authorization,`Bearer ${token}`);const chunks=[];req.on('data',c=>chunks.push(c));req.on('end',()=>{received=JSON.parse(Buffer.concat(chunks).toString('utf8'));res.writeHead(202);res.end()})});
+await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve)); const address=server.address(); assert.ok(address&&typeof address!=='string');
+fs.writeFileSync(path.join(routes,'route.json'),JSON.stringify({version:1,instanceId:'smoke',pid:process.pid,port:address.port,token,workspaceFolders:['/tmp/project'],workspaceName:'project',remoteName:'ssh-remote',createdAt:new Date().toISOString()}));
+const hook=JSON.stringify({session_id:'session-1',cwd:'/tmp/project/service',tool_name:'Bash'});
+await new Promise((resolve,reject)=>{const child=spawn(process.execPath,[cli,'--agent','codebuddy','--event','approval','--stdin'],{env:{...process.env,UNIFY_NOTIFIER_ROUTE_DIR:routes},stdio:['pipe','pipe','pipe']});let stderr='';child.stderr.on('data',c=>stderr+=c);child.on('error',reject);child.on('exit',code=>code===0?resolve():reject(new Error(`CLI exited ${code}: ${stderr}`)));child.stdin.end(hook)});
+assert.equal(received.version,1);assert.equal(received.agent,'codebuddy');assert.equal(received.event,'approval');assert.equal(received.cwd,'/tmp/project/service');assert.equal(received.sessionId,'session-1');assert.equal(received.message,'Approval requested for Bash.');
+await new Promise(resolve=>server.close(resolve));fs.rmSync(temp,{recursive:true,force:true});console.log('CLI smoke test passed');
