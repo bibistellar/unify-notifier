@@ -15,3 +15,12 @@ jobs:
       - run: npm install
       - run: npm run build
       - run: npm run test:smoke
+      - run: npm run package:vsix
+      - name: Upload VSIX packages and generated lockfile
+        uses: actions/upload-artifact@v4
+        with:
+          name: unify-notifier-build
+          path: |
+            artifacts/*.vsix
+            package-lock.json
+          if-no-files-found: error
