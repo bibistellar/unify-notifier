@@ -27,7 +27,8 @@ interface AgentSpec {
   hooks: HookMap;
 }
 
-const CLI = '~/.unify-notifier/bin/unify-notifier';
+const cliPath = path.join(os.homedir(), '.unify-notifier', 'bin', process.platform === 'win32' ? 'unify-notifier.cmd' : 'unify-notifier');
+const CLI = process.platform === 'win32' ? `"${cliPath}"` : '~/.unify-notifier/bin/unify-notifier';
 
 export const AGENT_SPECS: Record<AgentId, AgentSpec> = {
   codebuddy: {
@@ -48,10 +49,10 @@ export const AGENT_SPECS: Record<AgentId, AgentSpec> = {
     settingsPath: path.join(os.homedir(), '.claude', 'settings.json'),
     binaryNames: ['claude'],
     hooks: {
+      Stop: [{ hooks: [{ type: 'command', command: `${CLI} --agent claude --event completed --stdin` }] }],
       StopFailure: [{ hooks: [{ type: 'command', command: `${CLI} --agent claude --event failed --stdin` }] }],
       Notification: [
         { matcher: 'permission_prompt', hooks: [{ type: 'command', command: `${CLI} --agent claude --event approval --stdin` }] },
-        { matcher: 'idle_prompt', hooks: [{ type: 'command', command: `${CLI} --agent claude --event completed --stdin` }] },
         { matcher: 'elicitation_dialog', hooks: [{ type: 'command', command: `${CLI} --agent claude --event input-required --stdin` }] }
       ]
     }
@@ -134,6 +135,19 @@ function readSettings(file: string): { text: string; parsed: Record<string, unkn
   return { text, parsed: value as Record<string, unknown> };
 }
 
+function replaceFile(temp: string, file: string, mode: number): void {
+  try {
+    fs.renameSync(temp, file);
+  } catch (error) {
+    // Windows commonly refuses rename-over-existing. Fall back to a copy only
+    // after the original file has already been backed up.
+    if (!fs.existsSync(file)) throw error;
+    fs.copyFileSync(temp, file);
+    fs.unlinkSync(temp);
+  }
+  try { fs.chmodSync(file, mode); } catch {}
+}
+
 function writeHooks(file: string, nextHooks: HookMap): { changed: boolean; backup?: string } {
   const { text, parsed } = readSettings(file);
   const currentHooks = parsed.hooks;
@@ -146,30 +160,39 @@ function writeHooks(file: string, nextHooks: HookMap): { changed: boolean; backu
   const updated = applyEdits(text, edits);
   fs.mkdirSync(path.dirname(file), { recursive: true });
 
+  const existed = fs.existsSync(file);
+  const mode = existed ? fs.statSync(file).mode & 0o777 : 0o600;
   let backup: string | undefined;
-  if (fs.existsSync(file)) {
+  if (existed) {
     backup = `${file}.unify-notifier-backup-${new Date().toISOString().replace(/[:.]/g, '-')}`;
     fs.copyFileSync(file, backup);
+    try { fs.chmodSync(backup, mode); } catch {}
   }
 
   const temp = `${file}.unify-notifier-tmp-${process.pid}`;
-  fs.writeFileSync(temp, updated, 'utf8');
-  fs.renameSync(temp, file);
+  fs.writeFileSync(temp, updated, { encoding: 'utf8', mode });
+  replaceFile(temp, file, mode);
   return { changed: true, backup };
+}
+
+export function mergeHooksIntoSettingsFile(file: string, additions: HookMap): { changed: boolean; backup?: string } {
+  const { parsed } = readSettings(file);
+  return writeHooks(file, mergeHookMap(parsed.hooks, additions));
+}
+
+export function removeHooksFromSettingsFile(file: string, removals: HookMap): { changed: boolean; backup?: string } {
+  const { parsed } = readSettings(file);
+  return writeHooks(file, removeHookMap(parsed.hooks, removals));
 }
 
 export function configureAgent(id: AgentId): { changed: boolean; file: string; backup?: string } {
   const spec = AGENT_SPECS[id];
-  const { parsed } = readSettings(spec.settingsPath);
-  const next = mergeHookMap(parsed.hooks, spec.hooks);
-  return { ...writeHooks(spec.settingsPath, next), file: spec.settingsPath };
+  return { ...mergeHooksIntoSettingsFile(spec.settingsPath, spec.hooks), file: spec.settingsPath };
 }
 
 export function removeAgent(id: AgentId): { changed: boolean; file: string; backup?: string } {
   const spec = AGENT_SPECS[id];
-  const { parsed } = readSettings(spec.settingsPath);
-  const next = removeHookMap(parsed.hooks, spec.hooks);
-  return { ...writeHooks(spec.settingsPath, next), file: spec.settingsPath };
+  return { ...removeHooksFromSettingsFile(spec.settingsPath, spec.hooks), file: spec.settingsPath };
 }
 
 export function isAgentConfigured(id: AgentId): boolean {

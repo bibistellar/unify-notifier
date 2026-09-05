@@ -1,5 +1,15 @@
 {
   "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.unify-notifier/bin/unify-notifier --agent claude --event completed --stdin"
+          }
+        ]
+      }
+    ],
     "StopFailure": [
       {
         "hooks": [
@@ -17,15 +27,6 @@
           {
             "type": "command",
             "command": "~/.unify-notifier/bin/unify-notifier --agent claude --event approval --stdin"
-          }
-        ]
-      },
-      {
-        "matcher": "idle_prompt",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.unify-notifier/bin/unify-notifier --agent claude --event completed --stdin"
           }
         ]
       },

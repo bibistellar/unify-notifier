@@ -7,8 +7,9 @@ Run **Unify Notifier: Configure Agents** from the Command Palette. The command r
 - Existing settings are parsed as JSON/JSONC and preserved.
 - Existing hooks are kept; Unify Notifier appends only its own missing hook handlers.
 - Re-running configuration is idempotent and does not duplicate handlers.
-- Before modifying an existing settings file, Unify Notifier creates a timestamped backup next to it.
+- Before modifying an existing settings file, Unify Notifier creates a timestamped backup next to it and preserves restrictive file permissions where supported.
 - **Unify Notifier: Remove Agent Hooks** removes only handlers whose command exactly matches a Unify Notifier-managed command.
+- Hook command paths are generated for the workspace OS (`.cmd` on Windows, shell shim on Unix-like hosts).
 
 ## CodeBuddy
 
@@ -29,9 +30,9 @@ User settings: `~/.claude/settings.json`.
 
 Configured events:
 
-- `Notification(permission_prompt)` -> `approval`
-- `Notification(idle_prompt)` -> `completed`
-- `Notification(elicitation_dialog)` -> `input-required`
+- `Stop` -> `completed`
 - `StopFailure` -> `failed`
+- `Notification(permission_prompt)` -> `approval`
+- `Notification(elicitation_dialog)` -> `input-required`
 
-Using `Notification(idle_prompt)` instead of `Stop` avoids a completion notification after every assistant turn while following Claude Code's documented notification lifecycle.
+`Stop` is used deliberately because the product goal is an immediate notification when the agent finishes its response and returns control to the user. Native desktop notifications are suppressed while VS Code is focused by default, so this does not produce an OS-level alert while the user is already looking at the editor.
