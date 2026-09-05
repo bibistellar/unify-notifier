@@ -1,18 +1,20 @@
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import { applyEdits, modify, parse } from 'jsonc-parser';
+import { applyEdits, modify, parse, type ParseError } from 'jsonc-parser';
 
 export type AgentId = 'codebuddy' | 'claude';
 
 interface HookHandler {
-  type: 'command';
-  command: string;
+  type?: string;
+  command?: string;
+  [key: string]: unknown;
 }
 
 interface HookGroup {
   matcher?: string;
   hooks: HookHandler[];
+  [key: string]: unknown;
 }
 
 type HookMap = Record<string, HookGroup[]>;
@@ -108,19 +110,14 @@ export function removeHookMap(existing: unknown, removals: HookMap): HookMap {
   const result = cloneHooks(existing);
   const removalCommands = new Set(Object.values(removals).flatMap(groups => groups.flatMap(hookCommands)));
   for (const [event, groups] of Object.entries(result)) {
-    const kept = (Array.isArray(groups) ? groups : []).flatMap(group => {
-      if (!group || typeof group !== 'object') return [group];
-      const rawHooks = (group as { hooks?: unknown }).hooks;
-      if (!Array.isArray(rawHooks)) return [group];
-      const hooks = rawHooks.filter(handler => {
-        if (!handler || typeof handler !== 'object') return true;
-        const command = (handler as { command?: unknown }).command;
-        return typeof command !== 'string' || !removalCommands.has(command);
-      });
+    const kept = groups.flatMap(group => {
+      const hooks = group.hooks.filter(handler =>
+        typeof handler.command !== 'string' || !removalCommands.has(handler.command)
+      );
       if (hooks.length === 0) return [];
-      return [{ ...(group as Record<string, unknown>), hooks } as HookGroup];
+      return [{ ...group, hooks }];
     });
-    if (kept.length > 0) result[event] = kept as HookGroup[];
+    if (kept.length > 0) result[event] = kept;
     else delete result[event];
   }
   return result;
@@ -129,7 +126,7 @@ export function removeHookMap(existing: unknown, removals: HookMap): HookMap {
 function readSettings(file: string): { text: string; parsed: Record<string, unknown> } {
   if (!fs.existsSync(file)) return { text: '{}\n', parsed: {} };
   const text = fs.readFileSync(file, 'utf8');
-  const errors: unknown[] = [];
+  const errors: ParseError[] = [];
   const value = parse(text, errors, { allowTrailingComma: true, disallowComments: false });
   if (errors.length > 0 || !value || typeof value !== 'object' || Array.isArray(value)) {
     throw new Error(`Cannot safely edit invalid JSON/JSONC: ${file}`);
