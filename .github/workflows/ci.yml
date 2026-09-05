@@ -13,7 +13,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm install
+          cache: npm
+      - run: npm ci
       - run: npm run build
       - run: npm run test:smoke
       - run: npm run package:vsix
@@ -26,11 +27,9 @@ jobs:
           unzip -l artifacts/unify-notifier-router-0.1.0.vsix | grep -q 'extension/assets/unify-notifier-cli.js'
           unzip -l artifacts/unify-notifier-router-0.1.0.vsix | grep -q 'extension/node_modules/jsonc-parser/package.json'
           unzip -l artifacts/unify-notifier-0.1.0.vsix | grep -q 'extension/package.json'
-      - name: Upload VSIX packages and generated lockfile
+      - name: Upload VSIX packages
         uses: actions/upload-artifact@v4
         with:
           name: unify-notifier-build
-          path: |
-            artifacts/*.vsix
-            package-lock.json
+          path: artifacts/*.vsix
           if-no-files-found: error
