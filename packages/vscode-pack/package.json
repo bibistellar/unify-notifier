@@ -5,7 +5,19 @@
   "version": "0.1.0",
   "publisher": "bibistellar",
   "license": "MIT",
-  "engines": {"vscode": "^1.105.0"},
-  "categories": ["Extension Packs", "Other"],
-  "extensionPack": ["bibistellar.unify-notifier-ui", "bibistellar.unify-notifier-router"]
+  "engines": {
+    "vscode": "^1.105.0"
+  },
+  "categories": [
+    "Extension Packs",
+    "Other"
+  ],
+  "extensionPack": [
+    "bibistellar.unify-notifier-ui",
+    "bibistellar.unify-notifier-router"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bibistellar/unify-notifier.git"
+  }
 }

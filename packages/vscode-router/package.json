@@ -5,14 +5,57 @@
   "version": "0.1.0",
   "publisher": "bibistellar",
   "license": "MIT",
-  "engines": {"vscode": "^1.105.0"},
-  "categories": ["Other"],
-  "extensionKind": ["workspace"],
+  "engines": {
+    "vscode": "^1.105.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "extensionKind": [
+    "workspace"
+  ],
   "main": "./dist/extension.js",
-  "activationEvents": ["onStartupFinished"],
-  "extensionDependencies": ["bibistellar.unify-notifier-ui"],
-  "contributes": {"commands": [{"command": "unifyNotifier.router.status", "title": "Unify Notifier: Show Router Status"}]},
-  "scripts": {"build": "tsc -p tsconfig.json", "clean": "rm -rf dist"},
-  "dependencies": {"@unify-notifier/protocol": "0.1.0"},
-  "devDependencies": {"@types/node": "^22.0.0", "@types/vscode": "^1.105.0", "typescript": "^5.9.0"}
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "extensionDependencies": [
+    "bibistellar.unify-notifier-ui"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "unifyNotifier.router.status",
+        "title": "Unify Notifier: Show Router Status"
+      },
+      {
+        "command": "unifyNotifier.configureAgents",
+        "title": "Unify Notifier: Configure Agents"
+      },
+      {
+        "command": "unifyNotifier.removeAgentHooks",
+        "title": "Unify Notifier: Remove Agent Hooks"
+      },
+      {
+        "command": "unifyNotifier.testEndToEnd",
+        "title": "Unify Notifier: Test End-to-End Bridge"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "jsonc-parser": "^3.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/vscode": "^1.105.0",
+    "typescript": "^5.9.0",
+    "@unify-notifier/protocol": "0.1.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bibistellar/unify-notifier.git"
+  }
 }

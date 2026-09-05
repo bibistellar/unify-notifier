@@ -4,11 +4,20 @@
   "private": true,
   "description": "Unified desktop notifications for AI coding agents in VS Code, including Remote SSH workspaces.",
   "license": "MIT",
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "build": "npm run build --workspaces --if-present",
+    "build": "npm run build -w @unify-notifier/protocol && npm run build -w @unify-notifier/cli && npm run build -w unify-notifier-router && npm run build -w unify-notifier-ui",
+    "check": "npm run check --workspaces --if-present",
     "clean": "npm run clean --workspaces --if-present",
-    "test:smoke": "node tests/cli-smoke.mjs"
+    "test:smoke": "node tests/cli-smoke.mjs && node tests/hook-merge-smoke.mjs && node tests/hook-file-smoke.mjs",
+    "package:vsix": "npm run build && node scripts/package-vsix.mjs"
   },
-  "engines": {"node": ">=20"}
+  "devDependencies": {
+    "@vscode/vsce": "^3.9.2"
+  },
+  "engines": {
+    "node": ">=22"
+  }
 }

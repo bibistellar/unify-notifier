@@ -2,6 +2,7 @@ name: CI
 
 on:
   push:
+    branches: [main]
   pull_request:
 
 jobs:
@@ -15,3 +16,21 @@ jobs:
       - run: npm install
       - run: npm run build
       - run: npm run test:smoke
+      - run: npm run package:vsix
+      - name: Validate VSIX payloads
+        run: |
+          unzip -l artifacts/unify-notifier-ui-0.1.0.vsix | grep -q 'extension/dist/extension.js'
+          unzip -l artifacts/unify-notifier-ui-0.1.0.vsix | grep -q 'extension/node_modules/node-notifier/index.js'
+          unzip -l artifacts/unify-notifier-router-0.1.0.vsix | grep -q 'extension/dist/extension.js'
+          unzip -l artifacts/unify-notifier-router-0.1.0.vsix | grep -q 'extension/dist/agent-config.js'
+          unzip -l artifacts/unify-notifier-router-0.1.0.vsix | grep -q 'extension/assets/unify-notifier-cli.js'
+          unzip -l artifacts/unify-notifier-router-0.1.0.vsix | grep -q 'extension/node_modules/jsonc-parser/package.json'
+          unzip -l artifacts/unify-notifier-0.1.0.vsix | grep -q 'extension/package.json'
+      - name: Upload VSIX packages and generated lockfile
+        uses: actions/upload-artifact@v4
+        with:
+          name: unify-notifier-build
+          path: |
+            artifacts/*.vsix
+            package-lock.json
+          if-no-files-found: error
