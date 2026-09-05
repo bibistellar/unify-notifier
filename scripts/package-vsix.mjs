@@ -36,7 +36,16 @@ try {
       copyIfPresent(path.join(source, entry), path.join(stage, entry));
     }
 
-    const manifest = JSON.parse(fs.readFileSync(path.join(stage, 'package.json'), 'utf8'));
+    const manifestPath = path.join(stage, 'package.json');
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+
+    // Staging is a publishable runtime snapshot, not an npm workspace. Strip
+    // development-only metadata so npm never tries to resolve unpublished
+    // workspace packages such as @unify-notifier/protocol from the registry.
+    delete manifest.devDependencies;
+    delete manifest.scripts;
+    fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
+
     if (manifest.dependencies && Object.keys(manifest.dependencies).length > 0) {
       execFileSync(npm, [
         'install',
