@@ -1,0 +1,11 @@
+{
+  "hooks": {
+    "Stop": [{"hooks": [{"type": "command", "command": "~/.unify-notifier/bin/unify-notifier --agent claude --event completed --stdin"}]}],
+    "StopFailure": [{"hooks": [{"type": "command", "command": "~/.unify-notifier/bin/unify-notifier --agent claude --event failed --stdin"}]}],
+    "PermissionRequest": [{"hooks": [{"type": "command", "command": "~/.unify-notifier/bin/unify-notifier --agent claude --event approval --stdin"}]}],
+    "Notification": [
+      {"matcher": "idle_prompt", "hooks": [{"type": "command", "command": "~/.unify-notifier/bin/unify-notifier --agent claude --event input-required --stdin"}]},
+      {"matcher": "elicitation_dialog", "hooks": [{"type": "command", "command": "~/.unify-notifier/bin/unify-notifier --agent claude --event input-required --stdin"}]}
+    ]
+  }
+}
