@@ -9,9 +9,9 @@ const artifacts = path.join(root, 'artifacts');
 fs.mkdirSync(artifacts, { recursive: true });
 
 const packages = [
-  { name: 'vscode-ui', output: 'unify-notifier-ui-0.1.0.vsix', include: ['dist'] },
-  { name: 'vscode-router', output: 'unify-notifier-router-0.1.0.vsix', include: ['dist', 'assets'] },
-  { name: 'vscode-pack', output: 'unify-notifier-0.1.0.vsix', include: [] }
+  { name: 'vscode-ui', artifactName: 'unify-notifier-ui', include: ['dist'] },
+  { name: 'vscode-router', artifactName: 'unify-notifier-router', include: ['dist', 'assets'] },
+  { name: 'vscode-pack', artifactName: 'unify-notifier', include: [] }
 ];
 
 const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
@@ -57,7 +57,8 @@ try {
       ], { cwd: stage, stdio: 'inherit' });
     }
 
-    const packagePath = path.join(artifacts, spec.output);
+    const output = `${spec.artifactName}-${manifest.version}.vsix`;
+    const packagePath = path.join(artifacts, output);
     await createVSIX({ cwd: stage, packagePath });
     console.log(`Packaged ${path.relative(root, packagePath)}`);
   }
