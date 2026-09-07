@@ -2,7 +2,7 @@
   "name": "unify-notifier-ui",
   "displayName": "Unify Notifier UI",
   "description": "Local UI endpoint for Unify Notifier. Delivers native desktop notifications from local and remote coding agents.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "bibistellar",
   "license": "MIT",
   "engines": {

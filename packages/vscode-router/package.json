@@ -2,7 +2,7 @@
   "name": "unify-notifier-router",
   "displayName": "Unify Notifier Router",
   "description": "Workspace-side bridge for forwarding AI agent hook events to the local Unify Notifier UI extension.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "bibistellar",
   "license": "MIT",
   "engines": {
