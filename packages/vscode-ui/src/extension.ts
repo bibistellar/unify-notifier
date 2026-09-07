@@ -28,7 +28,16 @@ function shouldUseNative(config: vscode.WorkspaceConfiguration): boolean {
   return !vscode.window.state.focused;
 }
 
-async function deliver(event: AgentNotification): Promise<void> {
+function showToast(event: AgentNotification['event'], text: string): void {
+  // Do not await VS Code's message promise. It resolves only after the toast is
+  // dismissed/acted upon, which would otherwise block the remote HTTP request
+  // and make agent hooks appear to time out even though delivery succeeded.
+  if (event === 'failed') void vscode.window.showErrorMessage(text);
+  else if (event === 'approval' || event === 'input-required') void vscode.window.showWarningMessage(text);
+  else void vscode.window.showInformationMessage(text);
+}
+
+function deliver(event: AgentNotification): void {
   if (!event || event.version !== PROTOCOL_VERSION) return;
   const config = vscode.workspace.getConfiguration('unifyNotifier');
   const title = `${label(event.agent)} · ${event.title || defaultTitle(event.event)}`;
@@ -44,9 +53,7 @@ async function deliver(event: AgentNotification): Promise<void> {
   }
 
   if (config.get<boolean>('vscodeToasts', false) || vscode.window.state.focused) {
-    if (event.event === 'failed') await vscode.window.showErrorMessage(`${title}: ${message}`);
-    else if (event.event === 'approval' || event.event === 'input-required') await vscode.window.showWarningMessage(`${title}: ${message}`);
-    else await vscode.window.showInformationMessage(`${title}: ${message}`);
+    showToast(event.event, `${title}: ${message}`);
   }
 }
 
